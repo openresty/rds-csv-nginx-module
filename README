@@ -23,18 +23,27 @@ Description
 Directives
     rds_csv
         syntax: rds_csv on|off
+        default: rds_csv off
         context: http, server, location, location if
 
     rds_csv_row_terminator
-        syntax: rds_csv_row_terminator "\r\n"
+        syntax: rds_csv_row_terminator <str>
+        default: rds_csv_row_terminator "\r\n"
         context: http, server, location, location if
 
     rds_csv_field_separator
-        syntax: rds_csv_field_separator ","
+        syntax: rds_csv_field_separator <char>
+        default: rds_csv_field_name_header off
+        context: http, server, location, location if
+
+    rds_csv_field_name_header
+        syntax: rds_csv_field_name_header on|off
+        default: rds_csv_field_name_header off
         context: http, server, location, location if
 
     rds_csv_buffer_size
-        syntax: rds_csv_buffer_size 4k/8k
+        syntax: rds_csv_buffer_size <size>
+        default: rds_csv_buffer_size 4k/8k
         context: http, server, location, location if
 
 Author
