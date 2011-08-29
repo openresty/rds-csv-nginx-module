@@ -4,7 +4,9 @@
  */
 
 
+#ifndef DDEBUG
 #define DDEBUG 0
+#endif
 #include "ddebug.h"
 
 #include "ngx_http_rds_csv_filter_module.h"
@@ -15,16 +17,12 @@
 
 static u_char * ngx_http_rds_csv_request_mem(ngx_http_request_t *r,
         ngx_http_rds_csv_ctx_t *ctx, size_t len);
-
 static ngx_int_t ngx_http_rds_csv_get_buf(ngx_http_request_t *r,
         ngx_http_rds_csv_ctx_t *ctx);
-
 static u_char * ngx_http_rds_csv_get_postponed(ngx_http_request_t *r,
         ngx_http_rds_csv_ctx_t *ctx, size_t len);
-
 static ngx_int_t ngx_http_rds_csv_submit_mem(ngx_http_request_t *r,
         ngx_http_rds_csv_ctx_t *ctx, size_t len, unsigned last_buf);
-
 static size_t ngx_get_num_size(uint64_t i);
 
 
@@ -118,37 +116,48 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     size_t                   size;
     uintptr_t                escape;
     unsigned                 last_buf = 0;
+    unsigned                 need_quotes;
+    u_char                   sep;
+
+    ngx_http_rds_csv_conf_t            *conf;
 
     /* calculate the buffer size */
 
-    size = sizeof("{\"errcode\":") - 1
-         + ngx_get_num_size(header->std_errcode)
-         + sizeof("}") - 1
-         ;
+    if (header->std_errcode != 0) {
+        if (header->errstr.len) {
+            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                    "rds_csv: SQL query failed: errcode %d, errstr %V",
+                    (int) header->std_errcode, &header->errstr);
+        }
 
-    if (header->errstr.len) {
-        escape = ngx_http_rds_csv_escape_json_str(NULL, header->errstr.data,
-                header->errstr.len);
+        return NGX_HTTP_SERVICE_UNAVAILABLE;
+    }
 
-        size += sizeof(",\"errstr\":\"") - 1
-              + header->errstr.len + escape
-              + sizeof("\"") - 1
-              ;
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
+
+    if (conf->field_name_header) {
+        size = sizeof("errcode,errstr,insert_id,affected_rows") - 1 + conf->row_term.len;
+
     } else {
-        escape = (uintptr_t) 0;
+        size = 0;
     }
 
-    if (header->insert_id) {
-        size += sizeof(",\"insert_id\":") - 1
-              + ngx_get_num_size(header->insert_id)
-              ;
+    sep = (u_char) conf->field_sep;
+
+    size += 3 /* field seperators */ + conf->row_term.len;
+
+    size += ngx_get_num_size(header->std_errcode) + 1 /* field sep */;
+
+    escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, header->errstr.data,
+            header->errstr.len, &need_quotes);
+
+    if (need_quotes) {
+        size += sizeof("\"\"") - 1;
     }
 
-    if (header->affected_rows) {
-        size += sizeof(",\"affected_rows\":") - 1
-              + ngx_get_num_size(header->affected_rows)
-              ;
-    }
+    size += header->errstr.len + escape
+          + ngx_get_num_size(header->insert_id);
+          + ngx_get_num_size(header->affected_rows);
 
     /* create the buffer */
 
@@ -161,38 +170,29 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
 
     /* fill up the buffer */
 
-    last = ngx_copy_literal(last, "{\"errcode\":");
+    last = ngx_sprintf(last, "errcode%cerrstr%cinsert_id%caffected_rows%V"
+            "%uD%c", sep, sep, sep, &conf->row_term,
+            (uint32_t) header->std_errcode, sep);
 
-    last = ngx_snprintf(last, NGX_UINT16_LEN, "%uD",
-            (uint32_t) header->std_errcode);
-
-    if (header->errstr.len) {
-        last = ngx_copy_literal(last, ",\"errstr\":\"");
-
-        if (escape == 0) {
-            last = ngx_copy(last, header->errstr.data,
-                    header->errstr.len);
-        } else {
-            last = (u_char *) ngx_http_rds_csv_escape_json_str(last,
-                    header->errstr.data, header->errstr.len);
-        }
-
+    if (need_quotes) {
         *last++ = '"';
     }
 
-    if (header->insert_id) {
-        last = ngx_copy_literal(last, ",\"insert_id\":");
-        last = ngx_snprintf(last, NGX_UINT64_LEN, "%uL",
-                header->insert_id);
+    if (escape == 0) {
+        last = ngx_copy(last, header->errstr.data,
+                header->errstr.len);
+
+    } else {
+        last = (u_char *) ngx_http_rds_csv_escape_csv_str(sep, last,
+                header->errstr.data, header->errstr.len, NULL);
     }
 
-    if (header->affected_rows) {
-        last = ngx_copy_literal(last, ",\"affected_rows\":");
-        last = ngx_snprintf(last, NGX_UINT64_LEN, "%uL",
-                header->affected_rows);
+    if (need_quotes) {
+        *last++ = '"';
     }
 
-    *last++ = '}';
+    last = ngx_sprintf(last, "%c%uL%c%uL%V", sep, header->insert_id, sep,
+            header->affected_rows, &conf->row_term);
 
     if ((size_t) (last - pos) != size) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
@@ -207,7 +207,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
 
     ctx->seen_stream_end = 1;
 
-    return ngx_http_rds_csv_submit_mem(r, ctx, size, (unsigned) last_buf);
+    return ngx_http_rds_csv_submit_mem(r, ctx, size, last_buf);
 }
 
 
@@ -219,25 +219,30 @@ ngx_http_rds_csv_output_field_names(ngx_http_request_t *r,
     ngx_http_rds_column_t               *col;
     size_t                               size;
     u_char                              *pos, *last;
-    uintptr_t                            key_escape = 0;
+    uintptr_t                            escape = 0;
+    unsigned                             need_quotes;
+    u_char                               sep;
+    ngx_http_rds_csv_conf_t             *conf;
 
-    size = sizeof("[]") - 1;
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
+
+    sep = (u_char) conf->field_sep;
+
+    size = ctx->col_count - 1 /* field sep count */
+         + conf->row_term.len;
 
     for (i = 0; i < ctx->col_count; i++) {
         col = &ctx->cols[i];
-        key_escape = ngx_http_rds_csv_escape_json_str(NULL,
-                col->name.data, col->name.len);
+        escape = ngx_http_rds_csv_escape_csv_str(sep, NULL,
+                col->name.data, col->name.len, &need_quotes);
 
-        dd("key_escape: %d", (int) key_escape);
+        dd("field escape: %d", (int) escape);
 
-        size += col->name.len + key_escape
-              + sizeof("\"\"") - 1
-              ;
-
-        if (i != ctx->col_count - 1) {
-            /* not the last column */
-            size += sizeof(",") - 1;
+        if (need_quotes) {
+            size += sizeof("\"\"") - 1;
         }
+
+        size += col->name.len + escape;
     }
 
     ctx->generated_col_names = 1;
@@ -249,30 +254,42 @@ ngx_http_rds_csv_output_field_names(ngx_http_request_t *r,
 
     last = pos;
 
-
-    *last++ = '[';
-
     for (i = 0; i < ctx->col_count; i++) {
         col = &ctx->cols[i];
 
-        *last++ = '"';
+        escape = ngx_http_rds_csv_escape_csv_str(sep, NULL,
+                        col->name.data, col->name.len, &need_quotes);
 
-        if (key_escape == 0) {
+        if (need_quotes) {
+            *last++ = '"';
+        }
+
+        if (escape == 0) {
             last = ngx_copy(last, col->name.data, col->name.len);
 
         } else {
-            last = (u_char *) ngx_http_rds_csv_escape_json_str(last,
-                    col->name.data, col->name.len);
+            last = (u_char *) ngx_http_rds_csv_escape_csv_str(sep, last,
+                    col->name.data, col->name.len, NULL);
         }
 
-        *last++ = '"';
+        if (need_quotes) {
+            *last++ = '"';
+        }
 
         if (i != ctx->col_count - 1) {
-            *last++ = ',';
+            *last++ = sep;
         }
     }
 
-    *last++ = ']';
+    last = ngx_copy(last, conf->row_term.data, conf->row_term.len);
+
+    if ((size_t) (last - pos) != size) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                "rds_csv: output field names buffer error: %uz != %uz",
+                (size_t) (last - pos), size);
+
+        return NGX_ERROR;
+    }
 
     return ngx_http_rds_csv_submit_mem(r, ctx, size, 0);
 }
@@ -285,15 +302,15 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
 {
     u_char                              *pos, *last;
     ngx_http_rds_column_t               *col;
-    ngx_flag_t                           bool_val = 0;
     size_t                               size;
-    uintptr_t                            key_escape = 0;
     uintptr_t                            val_escape = 0;
-    u_char                              *p;
-    ngx_uint_t                           i;
-    ngx_http_rds_csv_conf_t            *conf;
+    unsigned                             need_quotes;
+    u_char                               sep;
+    ngx_http_rds_csv_conf_t             *conf;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
+
+    sep = (u_char) conf->field_sep;
 
     dd("reading row %llu, col %d, len %d",
             (unsigned long long) ctx->row,
@@ -301,47 +318,14 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
 
     /* calculate the buffer size */
 
-    if (format == json_format_normal) {
-        if (ctx->cur_col == 0) {
-            dd("first column");
-            if (ctx->row == 1) {
-                dd("first column, first row");
-                size = sizeof("{\"") - 1;
-            } else {
-                size = sizeof(",{\"") - 1;
-            }
-        } else {
-            size = sizeof(",\"") - 1;
-        }
+    if (ctx->cur_col == 0) {
+        size = 0;
 
-    } else if (format == json_format_compact) {
-        if (ctx->cur_col == 0) {
-            dd("first column");
-            size = sizeof(",[") - 1;
-        } else {
-            size = sizeof(",") - 1;
-        }
     } else {
-        return NGX_ERROR;
+        size = 1 /* field sep */;
     }
 
     col = &ctx->cols[ctx->cur_col];
-
-    if (format == json_format_normal) {
-        key_escape = ngx_http_rds_csv_escape_json_str(NULL, col->name.data,
-                col->name.len);
-
-        dd("key_escape: %d", (int) key_escape);
-
-        size += col->name.len + key_escape
-              + sizeof("\":") - 1
-              ;
-
-    } else if (format == json_format_compact) {
-        /* do nothing */
-    } else {
-        return NGX_ERROR;
-    }
 
     if (len == 0 && ctx->field_data_rest > 0) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
@@ -352,82 +336,40 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
     }
 
     if (is_null) {
-        size += sizeof("null") - 1;
+        /* SQL NULL is just empty in the CSV field */
 
     } else if (len == 0) {
-        dd("empty string value found");
-
-        size += sizeof("\"\"") - 1;
+        /* empty string is also empty */
 
     } else {
         switch (col->std_type & 0xc000) {
         case rds_rough_col_type_float:
-            dd("float field found");
-            /* TODO check validity of floating numbers */
-            size += len;
-            break;
-
         case rds_rough_col_type_int:
-            dd("int field found");
-
-            for (p = data, i = 0; i < len; i++, p++) {
-                if (i == 0 && *p == '-') {
-                    continue;
-                }
-
-                if (*p < '0' || *p > '9') {
-                    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                            "rds_csv: invalid integral field value: \"%*s\"",
-                            len, data);
-                    return NGX_ERROR;
-                }
-            }
-
-            size += len;
-            break;
-
         case rds_rough_col_type_bool:
-            dd("bool field found");
-
-            if (*data == '0' || *data == 'f' || *data == 'F'
-                    || *data == '1' || *data == 't' || *data == 'T' )
-            {
-                if (len != 1 || ctx->field_data_rest) {
-                    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                            "rds_csv: invalid boolean field value leading "
-                            "by \"%*s\"", len, data);
-                    return NGX_ERROR;
-                }
-
-                if (*data == '0' || *data == 'f' || *data == 'F') {
-                    bool_val = 0;
-                    size += sizeof("false") - 1;
-                } else {
-                    bool_val = 1;
-                    size += sizeof("true") - 1;
-                }
-            } else {
-                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                        "rds_csv: output field: invalid boolean value "
-                        "leading by \"%*s\"", len, data);
-                return NGX_ERROR;
-            }
+            size += len;
             break;
 
         default:
             dd("string field found");
 
-            /* TODO: further inspect array types and key-value types */
+            val_escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len,
+                    &need_quotes);
 
-            val_escape = ngx_http_rds_csv_escape_json_str(NULL, data, len);
-
-            size += sizeof("\"") - 1
-                  + len + val_escape
-                  ;
-
-            if (ctx->field_data_rest == 0) {
-                size += sizeof("\"") - 1;
+            if (ctx->field_data_rest > 0 && !need_quotes) {
+                need_quotes = 1;
             }
+
+            if (need_quotes) {
+                if (ctx->field_data_rest == 0) {
+                    size += sizeof("\"\"") - 1;
+
+                } else {
+                    size += sizeof("\"") - 1;
+                }
+            }
+
+            size += len + val_escape;
+            break;
         }
     }
 
@@ -435,14 +377,7 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
             && ctx->cur_col == ctx->col_count - 1)
     {
         /* last column in the row */
-        if (format == json_format_normal) {
-            size += sizeof("}") - 1;
-
-        } else if (format == json_format_compact) {
-            size += sizeof("]") - 1;
-        } else {
-            return NGX_ERROR;
-        }
+        size += conf->row_term.len;
     }
 
     /* allocate the buffer */
@@ -456,74 +391,30 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
 
     /* fill up the buffer */
 
-    if (format == json_format_normal) {
-        if (ctx->cur_col == 0) {
-            dd("first column");
-            if (ctx->row == 1) {
-                dd("first column, first row");
-                *last++ = '{';
-            } else {
-                *last++ = ','; *last++ = '{';
-            }
-        } else {
-            *last++ = ',';
-        }
-
-        *last++ = '"';
-
-        if (key_escape == 0) {
-            last = ngx_copy(last, col->name.data, col->name.len);
-
-        } else {
-            last = (u_char *) ngx_http_rds_csv_escape_json_str(last,
-                    col->name.data, col->name.len);
-        }
-
-        *last++ = '"'; *last++ = ':';
-
-    } else if (format == json_format_compact) {
-        if (ctx->cur_col == 0) {
-            dd("first column");
-            *last++ = ','; *last++ = '[';
-        } else {
-            *last++ = ',';
-        }
-
-    } else {
-        return NGX_ERROR;
+    if (ctx->cur_col != 0) {
+        *last++ = sep;
     }
 
-    if (is_null) {
-        dd("copy null value over");
-        last = ngx_copy_literal(last, "null");
+    if (is_null || len == 0) {
+        /* do nothing */
 
-    } else if (len == 0) {
-        dd("copy emtpy string over");
-        last = ngx_copy_literal(last, "\"\"");
     } else {
         switch (col->std_type & 0xc000) {
         case rds_rough_col_type_int:
         case rds_rough_col_type_float:
-            last = ngx_copy(last, data, len);
-
-            dd("copy over int/float value: %.*s", (int) len, data);
-
-            break;
-
         case rds_rough_col_type_bool:
-            if (bool_val) {
-                last = ngx_copy_literal(last, "true");
-            } else {
-                last = ngx_copy_literal(last, "false");
-            }
+            last = ngx_copy(last, data, len);
             break;
 
         default:
             /* string */
-            *last++ = '"';
+            if (need_quotes) {
+                *last++ = '"';
+            }
 
             if (val_escape == 0) {
                 last = ngx_copy(last, data, len);
+
             } else {
                 dd("field: string value escape non-zero: %d",
                         (int) val_escape);
@@ -532,8 +423,8 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
                 p = last;
 #endif
 
-                last = (u_char *) ngx_http_rds_csv_escape_json_str(last,
-                        data, len);
+                last = (u_char *) ngx_http_rds_csv_escape_csv_str(sep, last,
+                        data, len, NULL);
 
                 dd("escaped value \"%.*s\" (len %d, escape %d, escape2 %d)",
                         (int) (len + val_escape),
@@ -542,7 +433,7 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
                         (int) ((last - p) - len));
             }
 
-            if (ctx->field_data_rest == 0) {
+            if (need_quotes && ctx->field_data_rest == 0) {
                 *last++ = '"';
             }
 
@@ -553,14 +444,7 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
     if (ctx->field_data_rest == 0
             && ctx->cur_col == ctx->col_count - 1)
     {
-        dd("last column in the row");
-        if (format == json_format_normal) {
-            *last++ = '}';
-        } else if (format == json_format_compact) {
-            *last++ = ']';
-        } else {
-            return NGX_ERROR;
-        }
+        last = ngx_copy(last, conf->row_term.data, conf->row_term.len);
     }
 
     if ((size_t) (last - pos) != size) {
@@ -583,11 +467,16 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
     size_t                           size = 0;
     ngx_http_rds_column_t           *col;
     uintptr_t                        escape = 0;
+#if DDEBUG
     u_char                          *p;
-    ngx_uint_t                       i;
-    ngx_http_rds_csv_conf_t        *conf;
+#endif
+    unsigned                         need_quotes;
+    u_char                           sep;
+    ngx_http_rds_csv_conf_t         *conf;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
+
+    sep = (u_char) conf->field_sep;
 
     /* calculate the buffer size */
 
@@ -595,29 +484,15 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
 
     switch (col->std_type & 0xc000) {
     case rds_rough_col_type_int:
-        for (p = data, i = 0; i < len; i++, p++) {
-            if (*p < '0' || *p > '9') {
-                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                        "rds_csv: invalid integral field value: \"%*s\"",
-                        len, data);
-                return NGX_ERROR;
-            }
-        }
-
-        size += len;
-        break;
-
     case rds_rough_col_type_float:
-        /* TODO: check validity of floating-point field values */
-        size += len;
-        break;
-
     case rds_rough_col_type_bool:
+        size += len;
         break;
 
     default:
         /* string */
-        escape = ngx_http_rds_csv_escape_json_str(NULL, data, len);
+
+        escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len, &need_quotes);
         size = len + escape;
 
         if (ctx->field_data_rest == 0) {
@@ -631,13 +506,7 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
             && ctx->cur_col == ctx->col_count - 1)
     {
         /* last column in the row */
-        if (conf->format == json_format_normal) {
-            size += sizeof("}") - 1;
-        } else if (conf->format == json_format_compact) {
-            size += sizeof("]") - 1;
-        } else {
-            return NGX_ERROR;
-        }
+        size += conf->row_term.len;
     }
 
     /* allocate the buffer */
@@ -654,11 +523,8 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
     switch (col->std_type & 0xc000) {
     case rds_rough_col_type_int:
     case rds_rough_col_type_float:
-        last = ngx_copy(last, data, len);
-        break;
-
     case rds_rough_col_type_bool:
-        /* no op */
+        last = ngx_copy(last, data, len);
         break;
 
     default:
@@ -671,11 +537,11 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
                     (int) escape);
 
 #if DDEBUG
-                p = last;
+            p = last;
 #endif
 
-            last = (u_char *) ngx_http_rds_csv_escape_json_str(last,
-                    data, len);
+            last = (u_char *) ngx_http_rds_csv_escape_csv_str(sep, last,
+                    data, len, NULL);
 
             dd("escaped value \"%.*s\" (len %d, escape %d, escape2 %d)",
                     (int) (len + escape),
@@ -696,13 +562,7 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
             ctx->cur_col == ctx->col_count - 1)
     {
         /* last column in the row */
-        if (conf->format == json_format_normal) {
-            *last++ = '}';
-        } else if (conf->format == json_format_compact) {
-            *last++ = ']';
-        } else {
-            return NGX_ERROR;
-        }
+        last = ngx_copy(last, conf->row_term.data, conf->row_term.len);
     }
 
     if ((size_t) (last - pos) != size) {

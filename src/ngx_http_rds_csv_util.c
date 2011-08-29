@@ -6,37 +6,33 @@
 
 
 uintptr_t
-ngx_http_rds_csv_escape_json_str(u_char *dst, u_char *src, size_t size)
+ngx_http_rds_csv_escape_csv_str(u_char field_sep, u_char *dst, u_char *src,
+        size_t size, unsigned *need_quotes)
 {
     ngx_uint_t                   n;
 
-    static u_char hex[] = "0123456789abcdef";
-
     if (dst == NULL) {
+        *need_quotes = 0;
+
         /* find the number of characters to be escaped */
 
         n = 0;
 
         while (size) {
-            /* UTF-8 char has high bit of 1 */
-            if ((*src & 0x80) == 0) {
-                switch (*src) {
+            switch (*src) {
+                case '"':
+                    n++;
+
                 case '\r':
                 case '\n':
-                case '\\':
-                case '"':
-                case '\f':
-                case '\b':
-                case '\t':
-                    n++;
+                    *need_quotes = 1;
                     break;
-                default:
-                    if (*src < 32) {
-                        n += sizeof("\\u00xx") - 2;
-                    }
 
+                default:
+                    if (*src == field_sep) {
+                        *need_quotes = 1;
+                    }
                     break;
-                }
             }
 
             src++;
@@ -47,57 +43,9 @@ ngx_http_rds_csv_escape_json_str(u_char *dst, u_char *src, size_t size)
     }
 
     while (size) {
-        if ((*src & 0x80) == 0) {
-            switch (*src) {
-            case '\r':
-                *dst++ = '\\';
-                *dst++ = 'r';
-                break;
-
-            case '\n':
-                *dst++ = '\\';
-                *dst++ = 'n';
-                break;
-
-            case '\\':
-                *dst++ = '\\';
-                *dst++ = '\\';
-                break;
-
-            case '"':
-                *dst++ = '\\';
-                *dst++ = '"';
-                break;
-
-            case '\f':
-                *dst++ = '\\';
-                *dst++ = 'f';
-                break;
-
-            case '\b':
-                *dst++ = '\\';
-                *dst++ = 'b';
-                break;
-
-            case '\t':
-                *dst++ = '\\';
-                *dst++ = 't';
-                break;
-
-            default:
-                if (*src < 32) { /* control chars */
-                    *dst++ = '\\';
-                    *dst++ = 'u';
-                    *dst++ = '0';
-                    *dst++ = '0';
-                    *dst++ = hex[*src >> 4];
-                    *dst++ = hex[*src & 0x0f];
-                } else {
-                    *dst++ = *src;
-                }
-                break;
-            } /* switch */
-
+        if (*src == '"') {
+            *dst++ = '"';
+            *dst++ = '"';
             src++;
 
         } else {

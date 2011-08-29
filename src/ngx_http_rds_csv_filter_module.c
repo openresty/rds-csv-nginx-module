@@ -12,7 +12,6 @@
 #include "ngx_http_rds_csv_filter_module.h"
 #include "ngx_http_rds_csv_util.h"
 #include "ngx_http_rds_csv_processor.h"
-#include "ngx_http_rds_csv_handler.h"
 #include "ngx_http_rds_csv_output.h"
 
 #include <ngx_config.h>
