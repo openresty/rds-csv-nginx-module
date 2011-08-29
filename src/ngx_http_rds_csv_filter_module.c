@@ -449,8 +449,9 @@ ngx_http_rds_csv_field_separator(ngx_conf_t *cf, ngx_command_t *cmd,
         return "takes a string value not of length 1";
     }
 
-    if (sep->data[0] == ',' && sep->data[0] == ';' && sep->data[0] == '\t') {
-        return ngx_conf_set_str_slot(cf, cmd, conf);
+    if (sep->data[0] == ',' || sep->data[0] == ';' || sep->data[0] == '\t') {
+        rlcf->field_sep = (ngx_uint_t) (sep->data[0]);
+        return NGX_CONF_OK;
     }
 
     return "takes a value other than \",\", \";\", and \"\\t\"";
