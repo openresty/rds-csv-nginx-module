@@ -169,8 +169,14 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
          * according to RFC 4180 */
 
         len = sizeof(ngx_http_rds_csv_content_type) - 1 +
-            sizeof("; header=") - 1 +
-            ngx_max(sizeof("presence"), sizeof("absence")) - 1;
+            sizeof("; header=") - 1;
+
+        if (conf->field_name_header) {
+            len += sizeof("presence") - 1;
+
+        } else {
+            len += sizeof("absence") - 1;
+        }
 
         p = ngx_palloc(r->pool, len);
         if (p == NULL) {
@@ -178,6 +184,8 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
         }
 
         r->headers_out.content_type.len = len;
+        r->headers_out.content_type_len = len;
+
         r->headers_out.content_type.data = p;
 
         p = ngx_copy(p, conf->content_type.data, conf->content_type.len);
@@ -191,8 +199,8 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
 
         if (p - r->headers_out.content_type.data != (ssize_t) len) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                           "rds_csv: buffer error: %O != %uz",
-                           (off_t) (p - r->headers_out.content_type.data),
+                           "rds_csv: content type buffer error: %uz != %uz",
+                           (size_t) (p - r->headers_out.content_type.data),
                            len);
 
             return NGX_ERROR;

@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * 2 * blocks();
+plan tests => repeat_each() * 3 * blocks();
 
 $ENV{TEST_NGINX_MYSQL_PORT} ||= 3306;
 
@@ -36,6 +36,8 @@ __DATA__
 --- request
 POST /mysql
 sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
 --- response_body eval
 qq{male,name,height\r
 0,"\rkay",0.005\r
@@ -63,6 +65,8 @@ dad",7\r
 --- request
 POST /mysql
 sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
 --- response_body eval
 qq{male;name;height\r
 0;"\rkay";0.005\r
@@ -90,6 +94,8 @@ dad";7\r
 --- request
 POST /mysql
 sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
 --- response_body eval
 qq{male\tname\theight\r
 0\t"\rkay"\t0.005\r
@@ -118,6 +124,8 @@ dad"\t7\r
 --- request
 POST /mysql
 sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
 --- response_body eval
 qq{male\tname\theight\r
 0\t"\rkay"\t0.005\r
@@ -146,9 +154,133 @@ dad"\t7\r
 --- request
 POST /mysql
 sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
 --- response_body eval
 qq{male\tname\theight
 0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+
+
+
+=== TEST 4: explicitly field name header on
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv_field_name_header on;
+        rds_csv on;
+    }
+--- request
+POST /mysql
+sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=presence
+--- response_body eval
+qq{male\tname\theight
+0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+
+
+=== TEST 4: explicitly field name header off
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv_field_name_header off;
+        rds_csv on;
+    }
+--- request
+POST /mysql
+sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=absence
+--- response_body eval
+qq{0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+
+
+=== TEST 4: the "charset" directive does not affect us
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        charset "gbk";
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv_field_name_header off;
+        rds_csv on;
+    }
+--- request
+POST /mysql
+sql=select%20*%20from%20cats;
+--- response_headers
+Content-Type: text/csv; header=absence
+--- response_body eval
+qq{0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+--- ONLY
+
+
+
+
+=== TEST 4: set content type
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv_field_name_header off;
+        rds_csv_content_type "text/tab-separated-values";
+        rds_csv on;
+    }
+--- request
+GET /mysql
+--- response_headers
+Content-Type: text/tab-separated-values
+--- response_body eval
+qq{0\t"\rkay"\t0.005
 0\tab;c\t0.005
 0\t"foo\tbar"\t21
 0\t"hello ""tom"\t3.14
