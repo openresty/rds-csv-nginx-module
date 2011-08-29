@@ -21,6 +21,9 @@ Description
 
         http://tools.ietf.org/html/rfc4180
 
+    SQL NULL values will be converted to empty field value, just like
+    empty string values.
+
 Directives
     rds_csv
         syntax: rds_csv on|off
