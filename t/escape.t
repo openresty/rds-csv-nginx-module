@@ -289,3 +289,33 @@ dad"\t7
 1\thi,ya\t-3
 }
 
+
+=== TEST 9: set content type (bigger buffer size)
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv_field_name_header off;
+        rds_csv_content_type "text/tab-separated-values";
+        rds_csv on;
+        rds_csv_buffer_size 8k;
+    }
+--- request
+GET /mysql
+--- response_headers
+Content-Type: text/tab-separated-values
+--- response_body eval
+qq{0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+
