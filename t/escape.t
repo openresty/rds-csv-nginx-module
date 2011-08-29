@@ -101,3 +101,59 @@ dad"\t7\r
 1\thi,ya\t-3\r
 }
 
+
+
+=== TEST 4: explicitly using \r\n as the row terminator
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\r\n';
+        rds_csv on;
+    }
+--- request
+POST /mysql
+sql=select%20*%20from%20cats;
+--- response_body eval
+qq{male\tname\theight\r
+0\t"\rkay"\t0.005\r
+0\tab;c\t0.005\r
+0\t"foo\tbar"\t21\r
+0\t"hello ""tom"\t3.14\r
+0\t"hey
+dad"\t7\r
+1\thi,ya\t-3\r
+}
+
+
+
+=== TEST 4: using \n as the row terminator
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select * from dogs order by name asc;
+        ";
+        drizzle_pass backend;
+        rds_csv_field_separator '\t';
+        rds_csv_row_terminator '\n';
+        rds_csv on;
+    }
+--- request
+POST /mysql
+sql=select%20*%20from%20cats;
+--- response_body eval
+qq{male\tname\theight
+0\t"\rkay"\t0.005
+0\tab;c\t0.005
+0\t"foo\tbar"\t21
+0\t"hello ""tom"\t3.14
+0\t"hey
+dad"\t7
+1\thi,ya\t-3
+}
+

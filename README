@@ -26,25 +26,43 @@ Directives
         default: rds_csv off
         context: http, server, location, location if
 
+        Enable this output filter when on and disable otherwise.
+
     rds_csv_row_terminator
         syntax: rds_csv_row_terminator <str>
         default: rds_csv_row_terminator "\r\n"
         context: http, server, location, location if
 
+        Specify the row terminator used by the CSV format.
+        Only '\r\n' and '\n' are allowed.
+
+        Default to '\r\n', i.e., CR LF, according to RFC 4180.
+
     rds_csv_field_separator
         syntax: rds_csv_field_separator <char>
-        default: rds_csv_field_name_header off
+        default: rds_csv_field_separator ','
         context: http, server, location, location if
+
+        Specify the field seperator used by the CSV format.
+        Only ',', ';', and '\t' are allowed.
+
+        Default to ',' according to RFC 4180.
 
     rds_csv_field_name_header
         syntax: rds_csv_field_name_header on|off
         default: rds_csv_field_name_header off
         context: http, server, location, location if
 
+        Emits the first line of field names when this directive is set on,
+        and none otherwise.
+
     rds_csv_buffer_size
         syntax: rds_csv_buffer_size <size>
         default: rds_csv_buffer_size 4k/8k
         context: http, server, location, location if
+
+        The lager this buffer size setting, the less streammy the output
+        will be.
 
 Author
     Zhang "agentzh" Yichun <agentzh@gmail.com>
