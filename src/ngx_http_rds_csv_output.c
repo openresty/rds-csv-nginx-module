@@ -136,7 +136,8 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
 
     if (conf->field_name_header) {
-        size = sizeof("errcode,errstr,insert_id,affected_rows") - 1 + conf->row_term.len;
+        size = sizeof("errcode,errstr,insert_id,affected_rows") - 1
+             + conf->row_term.len;
 
     } else {
         size = 0;
@@ -492,7 +493,9 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
     default:
         /* string */
 
-        escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len, &need_quotes);
+        escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len,
+                &need_quotes);
+
         size = len + escape;
 
         if (ctx->field_data_rest == 0) {

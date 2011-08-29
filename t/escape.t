@@ -139,7 +139,7 @@ dad"\t7\r
 
 
 
-=== TEST 4: using \n as the row terminator
+=== TEST 5: using \n as the row terminator
 --- http_config eval: $::http_config
 --- config
     location /mysql {
@@ -169,7 +169,7 @@ dad"\t7
 
 
 
-=== TEST 4: explicitly field name header on
+=== TEST 6: explicitly field name header on
 --- http_config eval: $::http_config
 --- config
     location /mysql {
@@ -199,7 +199,8 @@ dad"\t7
 }
 
 
-=== TEST 4: explicitly field name header off
+
+=== TEST 7: explicitly field name header off
 --- http_config eval: $::http_config
 --- config
     location /mysql {
@@ -228,7 +229,8 @@ dad"\t7
 }
 
 
-=== TEST 4: the "charset" directive does not affect us
+
+=== TEST 8: the "charset" directive does not affect us
 --- http_config eval: $::http_config
 --- config
     location /mysql {
@@ -256,12 +258,10 @@ qq{0\t"\rkay"\t0.005
 dad"\t7
 1\thi,ya\t-3
 }
---- ONLY
 
 
 
-
-=== TEST 4: set content type
+=== TEST 9: set content type
 --- http_config eval: $::http_config
 --- config
     location /mysql {
