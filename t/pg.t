@@ -26,7 +26,7 @@ __DATA__
     }
 --- config
     location /test {
-        echo_location /pgignore "drop table foo";
+        echo_location /pgignore "drop table if exists foo";
         echo_location /pg "create table foo (id serial, flag bool);";
         echo_location /pg "insert into foo (flag) values (true);";
         echo_location /pg "insert into foo (flag) values (false);";
@@ -71,7 +71,7 @@ id,flag\r
     }
 --- config
     location /test {
-        echo_location /pgignore "drop table if exists foo";
+        echo_location /pg "drop table if exists foo";
         echo_location /pg "create table foo (id serial, flag bool);";
         echo_location /pg "insert into foo (flag) values (true);";
         echo_location /pg "insert into foo (flag) values (false);";
