@@ -128,3 +128,53 @@ GET /init
 --- error_code: 200
 --- timeout: 10
 
+
+
+=== TEST 8: birds - drop table
+--- http_config eval: $::http_config
+--- config
+    location = /init {
+        drizzle_pass   database;
+        drizzle_query  "DROP TABLE IF EXISTS birds";
+    }
+--- request
+GET /init
+--- error_code: 200
+--- timeout: 10
+
+
+
+=== TEST 9: birds - create table
+--- http_config eval: $::http_config
+--- config
+    location = /init {
+        drizzle_pass   database;
+        drizzle_query  "CREATE TABLE birds (`\"name\"` text, height real)";
+    }
+--- request
+GET /init
+--- error_code: 200
+--- timeout: 10
+
+
+
+=== TEST 10: birds - insert values
+--- http_config eval: $::http_config
+--- config
+    location = /init {
+        drizzle_pass   database;
+        drizzle_query  "
+INSERT INTO birds (`\"name\"`, height)
+VALUES
+    ('hello \"tom', 3.14),
+    ('hi,ya', -3),
+    ('hey\\ndad', 7),
+    ('\\rkay', 0.005),
+    ('ab;c', 0.005),
+    ('foo\\tbar', 21);";
+    }
+--- request
+GET /init
+--- error_code: 200
+--- timeout: 10
+

@@ -290,7 +290,8 @@ dad"\t7
 }
 
 
-=== TEST 9: set content type (bigger buffer size)
+
+=== TEST 10: set content type (bigger buffer size)
 --- http_config eval: $::http_config
 --- config
     location /mysql {
@@ -318,4 +319,25 @@ qq{0\t"\rkay"\t0.005
 dad"\t7
 1\thi,ya\t-3
 }
+
+
+
+=== TEST 11: escaping column names
+--- http_config eval: $::http_config
+--- config
+    location /mysql {
+        drizzle_query "
+            select `\"name\"`, height from birds order by height limit 1;
+        ";
+        drizzle_pass backend;
+        rds_csv on;
+        rds_csv_row_terminator "\n";
+    }
+--- request
+GET /mysql
+--- response_headers
+Content-Type: text/csv; header=presence
+--- response_body
+"""name""",height
+"hi,ya",-3
 
