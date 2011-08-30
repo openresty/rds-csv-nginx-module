@@ -108,7 +108,7 @@ GET /init
 
 
 
-=== TEST 7: cats - insert values
+=== TEST 7: dogs - insert values
 --- http_config eval: $::http_config
 --- config
     location = /init {
