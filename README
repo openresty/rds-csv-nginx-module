@@ -3,7 +3,7 @@ Name
                   (RDS) to Comma-Separated Values (CSV)
 
 Status
-    Not usable yet but under active development.
+    This module is considered production ready.
 
 Synopsis
     location /foo {
