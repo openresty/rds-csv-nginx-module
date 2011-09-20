@@ -21,6 +21,8 @@
 #define ngx_http_rds_csv_row_term  "\r\n"
 
 
+static unsigned  ngx_http_rds_csv_filter_used = 0;
+
 ngx_http_output_header_filter_pt  ngx_http_rds_csv_next_header_filter;
 ngx_http_output_body_filter_pt    ngx_http_rds_csv_next_body_filter;
 
@@ -29,11 +31,12 @@ static void *ngx_http_rds_csv_create_conf(ngx_conf_t *cf);
 static char *ngx_http_rds_csv_merge_conf(ngx_conf_t *cf, void *parent,
     void *child);
 static ngx_int_t ngx_http_rds_csv_filter_init(ngx_conf_t *cf);
-
 static char *ngx_http_rds_csv_row_terminator(ngx_conf_t *cf,
         ngx_command_t *cmd, void *conf);
 static char *ngx_http_rds_csv_field_separator(ngx_conf_t *cf,
         ngx_command_t *cmd, void *conf);
+static char * ngx_http_rds_csv(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static ngx_int_t ngx_http_rds_csv_pre_config(ngx_conf_t *cf);
 
 
 static ngx_command_t  ngx_http_rds_csv_commands[] = {
@@ -42,7 +45,7 @@ static ngx_command_t  ngx_http_rds_csv_commands[] = {
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF
           |NGX_HTTP_LOC_CONF|NGX_HTTP_LIF_CONF
           |NGX_CONF_FLAG,
-      ngx_conf_set_flag_slot,
+      ngx_http_rds_csv,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_rds_csv_conf_t, enabled),
       NULL },
@@ -96,7 +99,7 @@ static ngx_command_t  ngx_http_rds_csv_commands[] = {
 
 
 static ngx_http_module_t  ngx_http_rds_csv_filter_module_ctx = {
-    NULL,                                  /* preconfiguration */
+    ngx_http_rds_csv_pre_config,          /* preconfiguration */
     ngx_http_rds_csv_filter_init,         /* postconfiguration */
 
     NULL,                                  /* create main configuration */
@@ -463,5 +466,22 @@ ngx_http_rds_csv_field_separator(ngx_conf_t *cf, ngx_command_t *cmd,
     }
 
     return "takes a value other than \",\", \";\", and \"\\t\"";
+}
+
+
+static char *
+ngx_http_rds_csv(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_http_rds_csv_filter_used = 1;
+
+    return ngx_conf_set_flag_slot(cf, cmd, conf);
+}
+
+
+static ngx_int_t ngx_http_rds_csv_pre_config(ngx_conf_t *cf)
+{
+    ngx_http_rds_csv_filter_used = 0;
+
+    return NGX_OK;
 }
 
