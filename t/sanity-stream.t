@@ -20,7 +20,7 @@ our $http_config = <<'_EOC_';
 _EOC_
 
 no_long_string();
-no_diff();
+#no_diff();
 
 run_tests();
 
