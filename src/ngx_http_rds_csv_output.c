@@ -128,16 +128,6 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
 
     /* calculate the buffer size */
 
-    if (header->std_errcode != 0) {
-        if (header->errstr.len) {
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                    "rds_csv: SQL query failed: errcode %d, errstr %V",
-                    (int) header->std_errcode, &header->errstr);
-        }
-
-        return NGX_HTTP_SERVICE_UNAVAILABLE;
-    }
-
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
 
     if (conf->field_name_header) {
