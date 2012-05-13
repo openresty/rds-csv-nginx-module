@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) agentzh
  */
@@ -152,7 +151,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     }
 
     size += header->errstr.len + escape
-          + ngx_get_num_size(header->insert_id);
+          + ngx_get_num_size(header->insert_id)
           + ngx_get_num_size(header->affected_rows);
 
     /* create the buffer */
