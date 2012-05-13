@@ -142,7 +142,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
 
     size += 3 /* field seperators */ + conf->row_term.len;
 
-    size += ngx_get_num_size(header->std_errcode) + 1 /* field sep */;
+    size += ngx_get_num_size(header->std_errcode);
 
     escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, header->errstr.data,
             header->errstr.len, &need_quotes);
@@ -152,7 +152,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     }
 
     size += header->errstr.len + escape
-          + ngx_get_num_size(header->insert_id);
+          + ngx_get_num_size(header->insert_id)
           + ngx_get_num_size(header->affected_rows);
 
     /* create the buffer */
@@ -192,7 +192,8 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
 
     if ((size_t) (last - pos) != size) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                "rds_csv: output header buffer error");
+                "rds_csv: output header buffer error: %uz != %uz",
+                (size_t) (last - pos), size);
 
         return NGX_ERROR;
     }

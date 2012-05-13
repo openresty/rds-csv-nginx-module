@@ -6,9 +6,9 @@ use Test::Nginx::Socket;
 #repeat_each(10);
 no_shuffle();
 
-repeat_each(1);
+repeat_each(2);
 
-plan tests => repeat_each() * 2 * blocks() + 2 * repeat_each() * 3;
+plan tests => repeat_each() * (2 * blocks() + 7);
 
 $ENV{TEST_NGINX_MYSQL_PORT} ||= 3306;
 
@@ -125,6 +125,8 @@ Content-Type: text/csv; header=presence
 qq{errcode,errstr,insert_id,affected_rows\r
 0,Rows matched: 1  Changed: 0  Warnings: 0,0,0\r
 }
+--- no_error_log
+[error]
 
 
 
