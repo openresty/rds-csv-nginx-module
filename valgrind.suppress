@@ -1,4 +1,41 @@
 {
+<insert_a_suppression_name_here>
+Memcheck:Addr4
+fun:ngx_init_cycle
+fun:ngx_master_process_cycle
+fun:main
+}
+{
+<insert_a_suppression_name_here>
+Memcheck:Param
+socketcall.sendmsg(msg.msg_iov[i])
+fun:__sendmsg_nocancel
+fun:ngx_write_channel
+fun:ngx_signal_worker_processes
+fun:ngx_master_process_cycle
+fun:main
+}
+{
+<insert_a_suppression_name_here>
+Memcheck:Param
+socketcall.sendmsg(msg.msg_iov[i])
+fun:__sendmsg_nocancel
+fun:ngx_write_channel
+fun:ngx_master_process_cycle
+fun:main
+}
+{
+<insert_a_suppression_name_here>
+Memcheck:Param
+socketcall.sendmsg(msg.msg_iov[i])
+fun:__sendmsg_nocancel
+fun:ngx_write_channel
+fun:ngx_pass_open_channel
+fun:ngx_start_worker_processes
+fun:ngx_master_process_cycle
+fun:main
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
@@ -31,8 +68,6 @@
    fun:malloc
    fun:ngx_alloc
    fun:ngx_event_process_init
-   fun:ngx_single_process_cycle
-   fun:main
 }
 {
    nginx-core-crc32-init
@@ -53,8 +88,6 @@
    fun:ngx_http_init_request
    fun:ngx_epoll_process_events
    fun:ngx_process_events_and_timers
-   fun:ngx_single_process_cycle
-   fun:main
 }
 {
    palloc_large_for_create_temp_buf
@@ -67,8 +100,6 @@
    fun:ngx_http_init_request
    fun:ngx_epoll_process_events
    fun:ngx_process_events_and_timers
-   fun:ngx_single_process_cycle
-   fun:main
 }
 {
    accept_create_pool
@@ -80,8 +111,6 @@
    fun:ngx_event_accept
    fun:ngx_epoll_process_events
    fun:ngx_process_events_and_timers
-   fun:ngx_single_process_cycle
-   fun:main
 }
 {
    create_pool_for_init_req
@@ -93,8 +122,6 @@
    fun:ngx_http_init_request
    fun:ngx_epoll_process_events
    fun:ngx_process_events_and_timers
-   fun:ngx_single_process_cycle
-   fun:main
 }
 {
    create_pool_posix_memalign
@@ -263,19 +290,6 @@
    fun:ngx_init_cycle
    fun:main
 }
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Addr8
-   fun:ngx_http_upstream_drizzle_send_query
-   fun:ngx_http_drizzle_process_events
-   fun:ngx_http_drizzle_wev_handler
-   fun:ngx_http_upstream_dbd_handler
-   fun:ngx_epoll_process_events
-   fun:ngx_process_events_and_timers
-   fun:ngx_single_process_cycle
-   fun:main
-}
-
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
