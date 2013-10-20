@@ -8,6 +8,7 @@
 #endif
 #include "ddebug.h"
 
+
 #include "ngx_http_rds_csv_processor.h"
 #include "ngx_http_rds_csv_util.h"
 #include "ngx_http_rds_csv_output.h"
@@ -17,9 +18,10 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+
 ngx_int_t
-ngx_http_rds_csv_process_header(ngx_http_request_t *r,
-        ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
+ngx_http_rds_csv_process_header(ngx_http_request_t *r, ngx_chain_t *in,
+    ngx_http_rds_csv_ctx_t *ctx)
 {
     ngx_buf_t                       *b;
     ngx_http_rds_header_t            header;
@@ -31,11 +33,11 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
 
     b = in->buf;
 
-    if ( ! ngx_buf_in_memory(b) ) {
-        if ( ! ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b) ) {
+        if (!ngx_buf_special(b) ) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                "rds_csv: process header: buf from "
-                "upstream not in memory");
+                          "rds_csv: process header: buf from "
+                          "upstream not in memory");
             goto invalid;
         }
 
@@ -64,8 +66,8 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
 
         if (b->pos != b->last) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                    "rds_csv: header: there's unexpected remaining data "
-                    "in the buf");
+                          "rds_csv: header: there's unexpected remaining data "
+                          "in the buf");
 
             goto invalid;
         }
@@ -73,7 +75,7 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
         ctx->state = state_done;
 
         /* now we send the postponed response header */
-        if (! ctx->header_sent) {
+        if (!ctx->header_sent) {
             ctx->header_sent = 1;
 
             rc = ngx_http_rds_csv_next_header_filter(r);
@@ -95,7 +97,7 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
     }
 
     ctx->cols = ngx_palloc(r->pool,
-            header.col_count * sizeof(ngx_http_rds_column_t));
+                           header.col_count * sizeof(ngx_http_rds_column_t));
 
     if (ctx->cols == NULL) {
         goto invalid;
@@ -106,7 +108,7 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
     ctx->col_count = header.col_count;
 
     /* now we send the postponed response header */
-    if (! ctx->header_sent) {
+    if (!ctx->header_sent) {
         ctx->header_sent = 1;
 
         rc = ngx_http_rds_csv_next_header_filter(r);
@@ -115,13 +117,13 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r,
         }
     }
 
-    return ngx_http_rds_csv_process_col(r,
-            b->pos == b->last ? in->next : in, ctx);
+    return ngx_http_rds_csv_process_col(r, b->pos == b->last ? in->next : in,
+                                        ctx);
 
 invalid:
 
     dd("return 500");
-    if (! ctx->header_sent) {
+    if (!ctx->header_sent) {
         ctx->header_sent = 1;
 
         r->headers_out.status = NGX_HTTP_INTERNAL_SERVER_ERROR;
@@ -136,8 +138,8 @@ invalid:
 
 
 ngx_int_t
-ngx_http_rds_csv_process_col(ngx_http_request_t *r,
-        ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
+ngx_http_rds_csv_process_col(ngx_http_request_t *r, ngx_chain_t *in,
+    ngx_http_rds_csv_ctx_t *ctx)
 {
     ngx_buf_t                       *b;
     ngx_int_t                        rc;
@@ -149,11 +151,11 @@ ngx_http_rds_csv_process_col(ngx_http_request_t *r,
 
     b = in->buf;
 
-    if ( ! ngx_buf_in_memory(b) ) {
-        if ( ! ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b) ) {
+        if (!ngx_buf_special(b) ) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                "rds_csv: process col: buf from "
-                "upstream not in memory");
+                          "rds_csv: process col: buf from upstream not in "
+                          "memory");
             return NGX_ERROR;
         }
 
@@ -215,8 +217,8 @@ ngx_http_rds_csv_process_col(ngx_http_request_t *r,
 
 
 ngx_int_t
-ngx_http_rds_csv_process_row(ngx_http_request_t *r,
-        ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
+ngx_http_rds_csv_process_row(ngx_http_request_t *r, ngx_chain_t *in,
+    ngx_http_rds_csv_ctx_t *ctx)
 {
     ngx_buf_t                   *b;
     ngx_int_t                    rc;
@@ -229,11 +231,11 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r,
 
     b = in->buf;
 
-    if ( ! ngx_buf_in_memory(b) ) {
-        if ( ! ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b) ) {
+        if (!ngx_buf_special(b) ) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                "rds_csv: process row: buf from "
-                "upstream not in memory");
+                          "rds_csv: process row: buf from "
+                          "upstream not in memory");
             return NGX_ERROR;
         }
 
@@ -248,13 +250,11 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r,
 
     if (b->last - b->pos < (ssize_t) sizeof(uint8_t)) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-               "rds_csv: row flag is incomplete in the buf");
+                      "rds_csv: row flag is incomplete in the buf");
         return NGX_ERROR;
     }
 
-    dd("row flag: %d (offset %d)",
-            (char) *b->pos,
-            (int) (b->pos - b->start));
+    dd("row flag: %d (offset %d)", (char) *b->pos, (int) (b->pos - b->start));
 
     if (*b->pos++ == 0) {
         /* end of row list */
@@ -262,13 +262,13 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r,
 
         if (b->pos != b->last) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                    "rds_csv: row: there's unexpected remaining data "
-                    "in the buf");
+                          "rds_csv: row: there's unexpected remaining data "
+                          "in the buf");
             return NGX_ERROR;
         }
 
-        rc = ngx_http_rds_csv_output_literal(r, ctx,
-                (u_char *) "", 0, 1 /* last buf*/);
+        rc = ngx_http_rds_csv_output_literal(r, ctx, (u_char *) "", 0,
+                                             1 /* last buf*/);
 
         if (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE) {
             return rc;
@@ -283,6 +283,7 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r,
 
     if (b->pos == b->last) {
         in = in->next;
+
     } else {
         dd("process row: buf not consumed completely");
     }
@@ -292,8 +293,8 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r,
 
 
 ngx_int_t
-ngx_http_rds_csv_process_field(ngx_http_request_t *r,
-        ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
+ngx_http_rds_csv_process_field(ngx_http_request_t *r, ngx_chain_t *in,
+    ngx_http_rds_csv_ctx_t *ctx)
 {
     size_t              total, len;
     ngx_buf_t          *b;
@@ -306,13 +307,13 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r,
 
         b = in->buf;
 
-        if ( ! ngx_buf_in_memory(b) ) {
+        if (!ngx_buf_in_memory(b) ) {
             dd("buf not in memory");
 
-            if ( ! ngx_buf_special(b) ) {
+            if (!ngx_buf_special(b) ) {
                 ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                    "rds_csv: process field: buf from "
-                    "upstream not in memory");
+                              "rds_csv: process field: buf from "
+                              "upstream not in memory");
                 return NGX_ERROR;
             }
 
@@ -329,9 +330,9 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r,
 
         if (b->last - b->pos < (ssize_t) sizeof(uint32_t)) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                   "rds_csv: field size is incomplete in the buf: %*s "
-                   "(len: %d)", b->last - b->pos, b->pos,
-                   (int) (b->last - b->pos));
+                          "rds_csv: field size is incomplete in the buf: %*s "
+                          "(len: %d)", b->last - b->pos, b->pos,
+                          (int) (b->last - b->pos));
 
             return NGX_ERROR;
         }
@@ -349,7 +350,7 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r,
             ctx->field_data_rest = 0;
 
             rc = ngx_http_rds_csv_output_field(r, ctx, b->pos, len,
-                    1 /* is null */);
+                                               1 /* is null */);
 
         } else {
             len = (uint32_t) (b->last - b->pos);
@@ -361,7 +362,7 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r,
             ctx->field_data_rest = total - len;
 
             rc = ngx_http_rds_csv_output_field(r, ctx, b->pos, len,
-                    0 /* not null */);
+                                               0 /* not null */);
         }
 
         if (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE) {
@@ -403,7 +404,7 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r,
 
 ngx_int_t
 ngx_http_rds_csv_process_more_field_data(ngx_http_request_t *r,
-        ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
+    ngx_chain_t *in, ngx_http_rds_csv_ctx_t *ctx)
 {
     ngx_int_t                    rc;
     ngx_buf_t                   *b;
@@ -416,9 +417,9 @@ ngx_http_rds_csv_process_more_field_data(ngx_http_request_t *r,
 
         b = in->buf;
 
-        if ( ! ngx_buf_in_memory(b)) {
+        if (!ngx_buf_in_memory(b)) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                    "rds_csv: buf from upstream not in memory");
+                          "rds_csv: buf from upstream not in memory");
             return NGX_ERROR;
         }
 
@@ -472,4 +473,3 @@ ngx_http_rds_csv_process_more_field_data(ngx_http_request_t *r,
 
     return NGX_ERROR;
 }
-

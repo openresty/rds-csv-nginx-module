@@ -3,8 +3,10 @@
  * Copyright (C) agentzh
  */
 
+
 #ifndef NGX_HTTP_RDS_CSV_FILTER_MODULE_H
 #define NGX_HTTP_RDS_CSV_FILTER_MODULE_H
+
 
 #include "ngx_http_rds.h"
 
@@ -19,6 +21,7 @@
 
 
 extern ngx_module_t  ngx_http_rds_csv_filter_module;
+
 extern ngx_http_output_header_filter_pt  ngx_http_rds_csv_next_header_filter;
 extern ngx_http_output_body_filter_pt    ngx_http_rds_csv_next_body_filter;
 
@@ -84,4 +87,3 @@ typedef struct {
 
 
 #endif /* NGX_HTTP_RDS_CSV_FILTER_MODULE_H */
-

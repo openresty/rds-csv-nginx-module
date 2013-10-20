@@ -1,7 +1,14 @@
+
+/*
+ * Copyright (C) Yichun Zhang (agentzh)
+ */
+
+
 #ifndef DDEBUG
 #define DDEBUG 0
 #endif
 #include "ddebug.h"
+
 
 #include "resty_dbd_stream.h"
 #include "ngx_http_rds_csv_util.h"
@@ -9,7 +16,7 @@
 
 uintptr_t
 ngx_http_rds_csv_escape_csv_str(u_char field_sep, u_char *dst, u_char *src,
-        size_t size, unsigned *need_quotes)
+    size_t size, unsigned *need_quotes)
 {
     ngx_uint_t                   n;
 
@@ -67,9 +74,9 @@ ngx_http_rds_csv_test_content_type(ngx_http_request_t *r)
     ngx_str_t           *type;
 
     type = &r->headers_out.content_type;
-    if (type->len != rds_content_type_len ||
-            ngx_strncmp(type->data, rds_content_type,
-                rds_content_type_len) != 0)
+    if (type->len != rds_content_type_len
+        || ngx_strncmp(type->data, rds_content_type, rds_content_type_len)
+           != 0)
     {
         return NGX_DECLINED;
     }
@@ -94,4 +101,3 @@ ngx_http_rds_csv_discard_bufs(ngx_pool_t *pool, ngx_chain_t *in)
         cl->buf->pos = cl->buf->last;
     }
 }
-

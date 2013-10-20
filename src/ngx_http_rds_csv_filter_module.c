@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) agentzh
+ * Copyright (C) Yichun Zhang (agentzh)
  */
 
 
@@ -8,6 +8,7 @@
 #define DDEBUG 0
 #endif
 #include "ddebug.h"
+
 
 #include "ngx_http_rds_csv_filter_module.h"
 #include "ngx_http_rds_csv_util.h"
@@ -33,9 +34,9 @@ static char *ngx_http_rds_csv_merge_loc_conf(ngx_conf_t *cf, void *parent,
     void *child);
 static ngx_int_t ngx_http_rds_csv_filter_init(ngx_conf_t *cf);
 static char *ngx_http_rds_csv_row_terminator(ngx_conf_t *cf,
-        ngx_command_t *cmd, void *conf);
+    ngx_command_t *cmd, void *conf);
 static char *ngx_http_rds_csv_field_separator(ngx_conf_t *cf,
-        ngx_command_t *cmd, void *conf);
+    ngx_command_t *cmd, void *conf);
 static char * ngx_http_rds_csv(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static void * ngx_http_rds_csv_create_main_conf(ngx_conf_t *cf);
 
@@ -104,10 +105,10 @@ static ngx_http_module_t  ngx_http_rds_csv_filter_module_ctx = {
     ngx_http_rds_csv_filter_init,         /* postconfiguration */
 
     ngx_http_rds_csv_create_main_conf,    /* create main configuration */
-    NULL,                                  /* init main configuration */
+    NULL,                                 /* init main configuration */
 
-    NULL,                                  /* create server configuration */
-    NULL,                                  /* merge server configuration */
+    NULL,                                 /* create server configuration */
+    NULL,                                 /* merge server configuration */
 
     ngx_http_rds_csv_create_loc_conf,     /* create location configuration */
     ngx_http_rds_csv_merge_loc_conf       /* merge location configuration */
@@ -157,7 +158,7 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
 
-    if ( ! conf->enabled) {
+    if (!conf->enabled) {
         return ngx_http_rds_csv_next_header_filter(r);
     }
 
@@ -165,15 +166,15 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
         return ngx_http_rds_csv_next_header_filter(r);
     }
 
-    if (conf->content_type.len == sizeof(ngx_http_rds_csv_content_type) - 1 &&
-            ngx_strncmp(conf->content_type.data, ngx_http_rds_csv_content_type,
-            sizeof(ngx_http_rds_csv_content_type) - 1) == 0)
+    if (conf->content_type.len == sizeof(ngx_http_rds_csv_content_type) - 1
+        && ngx_strncmp(conf->content_type.data, ngx_http_rds_csv_content_type,
+                       sizeof(ngx_http_rds_csv_content_type) - 1) == 0)
     {
         /* MIME type is text/csv, we process Content-Type
          * according to RFC 4180 */
 
-        len = sizeof(ngx_http_rds_csv_content_type) - 1 +
-            sizeof("; header=") - 1;
+        len = sizeof(ngx_http_rds_csv_content_type) - 1
+              + sizeof("; header=") - 1;
 
         if (conf->field_name_header) {
             len += sizeof("presence") - 1;
@@ -203,9 +204,9 @@ ngx_http_rds_csv_header_filter(ngx_http_request_t *r)
 
         if (p - r->headers_out.content_type.data != (ssize_t) len) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                           "rds_csv: content type buffer error: %uz != %uz",
-                           (size_t) (p - r->headers_out.content_type.data),
-                           len);
+                          "rds_csv: content type buffer error: %uz != %uz",
+                          (size_t) (p - r->headers_out.content_type.data),
+                          len);
 
             return NGX_ERROR;
         }
@@ -306,8 +307,8 @@ ngx_http_rds_csv_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
         break;
     default:
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                       "rds_csv: invalid internal state: %d",
-                       ctx->state);
+                      "rds_csv: invalid internal state: %d",
+                      ctx->state);
 
         rc = NGX_ERROR;
 
@@ -319,7 +320,7 @@ ngx_http_rds_csv_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
     if (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE) {
         ctx->state = state_done;
 
-        if (! ctx->header_sent) {
+        if (!ctx->header_sent) {
             ctx->header_sent = 1;
 
             if (rc == NGX_ERROR) {
@@ -411,16 +412,16 @@ ngx_http_rds_csv_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_conf_merge_value(conf->field_name_header, prev->field_name_header, 1);
 
     ngx_conf_merge_uint_value(conf->field_sep, prev->field_sep,
-            (ngx_uint_t) ',');
+                              (ngx_uint_t) ',');
 
     ngx_conf_merge_str_value(conf->row_term, prev->row_term,
-            ngx_http_rds_csv_row_term);
+                             ngx_http_rds_csv_row_term);
 
     ngx_conf_merge_str_value(conf->content_type, prev->content_type,
-            ngx_http_rds_csv_content_type);
+                             ngx_http_rds_csv_content_type);
 
     ngx_conf_merge_size_value(conf->buf_size, prev->buf_size,
-            (size_t) ngx_pagesize);
+                              (size_t) ngx_pagesize);
 
     return NGX_CONF_OK;
 }
@@ -428,7 +429,7 @@ ngx_http_rds_csv_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
 static char *
 ngx_http_rds_csv_row_terminator(ngx_conf_t *cf, ngx_command_t *cmd,
-        void *conf)
+    void *conf)
 {
     ngx_http_rds_csv_loc_conf_t         *rlcf = conf;
     ngx_str_t                           *value;
@@ -446,8 +447,8 @@ ngx_http_rds_csv_row_terminator(ngx_conf_t *cf, ngx_command_t *cmd,
         return "takes empty string value";
     }
 
-    if ((term->len == 1 && term->data[0] == '\n') ||
-            (term->len == 2 && term->data[0] == '\r' && term->data[1] == '\n'))
+    if ((term->len == 1 && term->data[0] == '\n')
+        || (term->len == 2 && term->data[0] == '\r' && term->data[1] == '\n'))
     {
         return ngx_conf_set_str_slot(cf, cmd, conf);
     }
@@ -458,7 +459,7 @@ ngx_http_rds_csv_row_terminator(ngx_conf_t *cf, ngx_command_t *cmd,
 
 static char *
 ngx_http_rds_csv_field_separator(ngx_conf_t *cf, ngx_command_t *cmd,
-        void *conf)
+    void *conf)
 {
     ngx_http_rds_csv_loc_conf_t         *rlcf = conf;
     ngx_str_t                           *value;
