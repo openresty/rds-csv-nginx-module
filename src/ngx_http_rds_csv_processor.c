@@ -141,7 +141,7 @@ ngx_http_rds_csv_process_col(ngx_http_request_t *r,
 {
     ngx_buf_t                       *b;
     ngx_int_t                        rc;
-    ngx_http_rds_csv_conf_t        *conf;
+    ngx_http_rds_csv_loc_conf_t     *conf;
 
     if (in == NULL) {
         return NGX_OK;

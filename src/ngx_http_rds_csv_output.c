@@ -124,7 +124,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     unsigned                 need_quotes;
     u_char                   sep;
 
-    ngx_http_rds_csv_conf_t            *conf;
+    ngx_http_rds_csv_loc_conf_t       *conf;
 
     /* calculate the buffer size */
 
@@ -219,7 +219,7 @@ ngx_http_rds_csv_output_field_names(ngx_http_request_t *r,
     uintptr_t                            escape = 0;
     unsigned                             need_quotes;
     u_char                               sep;
-    ngx_http_rds_csv_conf_t             *conf;
+    ngx_http_rds_csv_loc_conf_t         *conf;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
 
@@ -303,7 +303,7 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
     uintptr_t                            val_escape = 0;
     unsigned                             need_quotes;
     u_char                               sep;
-    ngx_http_rds_csv_conf_t             *conf;
+    ngx_http_rds_csv_loc_conf_t         *conf;
 #if DDEBUG
     u_char                              *p;
 #endif
@@ -472,7 +472,7 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
 #endif
     unsigned                         need_quotes;
     u_char                           sep;
-    ngx_http_rds_csv_conf_t         *conf;
+    ngx_http_rds_csv_loc_conf_t     *conf;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_rds_csv_filter_module);
 
@@ -612,7 +612,7 @@ static ngx_int_t
 ngx_http_rds_csv_get_buf(ngx_http_request_t *r,
         ngx_http_rds_csv_ctx_t *ctx)
 {
-    ngx_http_rds_csv_conf_t            *conf;
+    ngx_http_rds_csv_loc_conf_t         *conf;
 
     dd("MEM enter");
 

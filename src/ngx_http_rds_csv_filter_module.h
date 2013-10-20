@@ -30,7 +30,12 @@ typedef struct {
     size_t                           buf_size;
     ngx_flag_t                       field_name_header;
     ngx_str_t                        content_type;
-} ngx_http_rds_csv_conf_t;
+} ngx_http_rds_csv_loc_conf_t;
+
+
+typedef struct {
+    ngx_int_t           requires_filter;
+} ngx_http_rds_csv_main_conf_t;
 
 
 typedef enum {
