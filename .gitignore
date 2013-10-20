@@ -66,6 +66,8 @@ restart
 misc/
 t/servroot/
 all
-build1[0-3]
+build1[0-9]
 buildroot/
 a.pl
+*.plist
+Makefile
