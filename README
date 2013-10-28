@@ -82,16 +82,18 @@ Compatibility
 
     This module is compatible with the following versions of Nginx:
 
+    * 1.4.x (last tested: 1.4.3)
+    * 1.2.x (last tested: 1.2.9)
     * 1.1.x (last tested: 1.1.5)
     * 1.0.x (last tested: 1.0.8)
 
 Author
-    Zhang "agentzh" Yichun <agentzh@gmail.com>
+    Yichun "agentzh" Zhang <agentzh@gmail.com>, CloudFlare Inc.
 
 Copyright & License
     This module is licenced under the BSD license.
 
-    Copyright (C) 2011, Zhang "agentzh" Yichun (章亦春) <agentzh@gmail.com>.
+    Copyright (C) 2011-2013, Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
 
     All rights reserved.
 
