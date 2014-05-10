@@ -355,7 +355,11 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
 
         default:
             dd("string field found");
-
+            if (!conf->quote_string) {
+                dd("no need to quote string.");
+                size += len;
+                break;
+            }
             val_escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len,
                                                          &need_quotes);
 
@@ -410,6 +414,11 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
 
         default:
             /* string */
+            if (!conf->quote_string) {
+                dd("no need to quote string, just copy string buffer.");
+                last = ngx_copy(last, data, len);
+                break;
+            }
             if (need_quotes) {
                 *last++ = '"';
             }
@@ -492,7 +501,11 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
 
     default:
         /* string */
-
+        if (!conf->quote_string) {
+            dd("no need to quote string.");
+            size += len;
+            break;
+        }
         escape = ngx_http_rds_csv_escape_csv_str(sep, NULL, data, len,
                                                  &need_quotes);
 
@@ -530,6 +543,11 @@ ngx_http_rds_csv_output_more_field_data(ngx_http_request_t *r,
 
     default:
         /* string */
+        if (!conf->quote_string) {
+            dd("no need to quote string, just copy string buffer.");
+            last = ngx_copy(last, data, len);
+            break;
+        }
         if (escape == 0) {
             last = ngx_copy(last, data, len);
 

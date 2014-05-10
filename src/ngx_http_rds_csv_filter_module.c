@@ -96,6 +96,15 @@ static ngx_command_t  ngx_http_rds_csv_commands[] = {
       offsetof(ngx_http_rds_csv_loc_conf_t, buf_size),
       NULL },
 
+    { ngx_string("rds_csv_quote_string"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF
+          |NGX_HTTP_LOC_CONF|NGX_HTTP_LIF_CONF
+          |NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_rds_csv_loc_conf_t, quote_string),
+      NULL },
+
       ngx_null_command
 };
 
@@ -396,6 +405,7 @@ ngx_http_rds_csv_create_loc_conf(ngx_conf_t *cf)
     conf->field_sep = NGX_CONF_UNSET_UINT;
     conf->buf_size = NGX_CONF_UNSET_SIZE;
     conf->field_name_header = NGX_CONF_UNSET;
+    conf->quote_string = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -410,6 +420,8 @@ ngx_http_rds_csv_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_conf_merge_value(conf->enabled, prev->enabled, 0);
 
     ngx_conf_merge_value(conf->field_name_header, prev->field_name_header, 1);
+    
+    ngx_conf_merge_value(conf->quote_string, prev->quote_string, 1);
 
     ngx_conf_merge_uint_value(conf->field_sep, prev->field_sep,
                               (ngx_uint_t) ',');
