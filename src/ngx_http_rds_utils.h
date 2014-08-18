@@ -36,7 +36,7 @@ ngx_http_rds_parse_header(ngx_http_request_t *r, ngx_buf_t *b,
 
     /* check endian type */
 
-    if ( *(uint8_t *) b->pos !=
+    if (*(uint8_t *) b->pos !=
 #if (NGX_HAVE_LITTLE_ENDIAN)
             0
 #else /* big endian */
@@ -53,7 +53,7 @@ ngx_http_rds_parse_header(ngx_http_request_t *r, ngx_buf_t *b,
 
     /* check RDS format version number */
 
-    if ( *(uint32_t *) b->pos != (uint32_t) resty_dbd_stream_version) {
+    if (*(uint32_t *) b->pos != (uint32_t) resty_dbd_stream_version) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                       "rds: RDS format version differ");
         return NGX_ERROR;

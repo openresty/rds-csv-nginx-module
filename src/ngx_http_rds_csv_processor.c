@@ -33,8 +33,8 @@ ngx_http_rds_csv_process_header(ngx_http_request_t *r, ngx_chain_t *in,
 
     b = in->buf;
 
-    if (!ngx_buf_in_memory(b) ) {
-        if (!ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b)) {
+        if (!ngx_buf_special(b)) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                           "rds_csv: process header: buf from "
                           "upstream not in memory");
@@ -151,8 +151,8 @@ ngx_http_rds_csv_process_col(ngx_http_request_t *r, ngx_chain_t *in,
 
     b = in->buf;
 
-    if (!ngx_buf_in_memory(b) ) {
-        if (!ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b)) {
+        if (!ngx_buf_special(b)) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                           "rds_csv: process col: buf from upstream not in "
                           "memory");
@@ -231,8 +231,8 @@ ngx_http_rds_csv_process_row(ngx_http_request_t *r, ngx_chain_t *in,
 
     b = in->buf;
 
-    if (!ngx_buf_in_memory(b) ) {
-        if (!ngx_buf_special(b) ) {
+    if (!ngx_buf_in_memory(b)) {
+        if (!ngx_buf_special(b)) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                           "rds_csv: process row: buf from "
                           "upstream not in memory");
@@ -307,10 +307,10 @@ ngx_http_rds_csv_process_field(ngx_http_request_t *r, ngx_chain_t *in,
 
         b = in->buf;
 
-        if (!ngx_buf_in_memory(b) ) {
+        if (!ngx_buf_in_memory(b)) {
             dd("buf not in memory");
 
-            if (!ngx_buf_special(b) ) {
+            if (!ngx_buf_special(b)) {
                 ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                               "rds_csv: process field: buf from "
                               "upstream not in memory");
