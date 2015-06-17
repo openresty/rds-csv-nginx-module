@@ -122,7 +122,7 @@ ngx_http_rds_csv_output_header(ngx_http_request_t *r,
     size_t                   size;
     uintptr_t                escape;
     unsigned                 last_buf = 0;
-    unsigned                 need_quotes;
+    unsigned                 need_quotes = 0;
     u_char                   sep;
 
     ngx_http_rds_csv_loc_conf_t       *conf;
@@ -305,7 +305,7 @@ ngx_http_rds_csv_output_field(ngx_http_request_t *r,
     ngx_http_rds_column_t               *col;
     size_t                               size;
     uintptr_t                            val_escape = 0;
-    unsigned                             need_quotes;
+    unsigned                             need_quotes = 0;
     u_char                               sep;
     ngx_http_rds_csv_loc_conf_t         *conf;
 #if DDEBUG
