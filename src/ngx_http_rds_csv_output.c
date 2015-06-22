@@ -16,11 +16,11 @@
 #include "resty_dbd_stream.h"
 
 
-static u_char * ngx_http_rds_csv_request_mem(ngx_http_request_t *r,
+static u_char *ngx_http_rds_csv_request_mem(ngx_http_request_t *r,
     ngx_http_rds_csv_ctx_t *ctx, size_t len);
 static ngx_int_t ngx_http_rds_csv_get_buf(ngx_http_request_t *r,
     ngx_http_rds_csv_ctx_t *ctx);
-static u_char * ngx_http_rds_csv_get_postponed(ngx_http_request_t *r,
+static u_char *ngx_http_rds_csv_get_postponed(ngx_http_request_t *r,
     ngx_http_rds_csv_ctx_t *ctx, size_t len);
 static ngx_int_t ngx_http_rds_csv_submit_mem(ngx_http_request_t *r,
     ngx_http_rds_csv_ctx_t *ctx, size_t len, unsigned last_buf);
@@ -658,6 +658,7 @@ ngx_http_rds_csv_get_postponed(ngx_http_request_t *r,
     return ctx->cached.start;
 
 alloc:
+
     p = ngx_palloc(r->pool, len);
     if (p == NULL) {
         return NULL;

@@ -37,8 +37,8 @@ static char *ngx_http_rds_csv_row_terminator(ngx_conf_t *cf,
     ngx_command_t *cmd, void *conf);
 static char *ngx_http_rds_csv_field_separator(ngx_conf_t *cf,
     ngx_command_t *cmd, void *conf);
-static char * ngx_http_rds_csv(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-static void * ngx_http_rds_csv_create_main_conf(ngx_conf_t *cf);
+static char *ngx_http_rds_csv(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static void *ngx_http_rds_csv_create_main_conf(ngx_conf_t *cf);
 
 
 static ngx_command_t  ngx_http_rds_csv_commands[] = {
