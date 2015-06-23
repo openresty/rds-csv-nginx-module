@@ -18,6 +18,7 @@ Table of Contents
     * [rds_csv_field_name_header](#rds_csv_field_name_header)
     * [rds_csv_content_type](#rds_csv_content_type)
     * [rds_csv_buffer_size](#rds_csv_buffer_size)
+* [Installation](#installation)
 * [Compatibility](#compatibility)
 * [Author](#author)
 * [Copyright & License](#copyright--license)
@@ -144,6 +145,36 @@ rds_csv_buffer_size
 
 The lager this buffer size setting, the less streammy the output
 will be.
+
+[Back to TOC](#table-of-contents)
+
+Installation
+============
+
+You're recommended to install this module (as well as the Nginx core and many other goodies) via the [ngx_openresty bundle](http://openresty.org). See [the detailed instructions](http://openresty.org/#Installation) for downloading and installing ngx_openresty into your system. This is the easiest and most safe way to set things up.
+
+Alternatively, you can install this module manually with the Nginx source:
+
+Grab the nginx source code from [nginx.org](http://nginx.org/), for example,
+the version 1.7.10 (see [nginx compatibility](#compatibility)), and then build the source with this module:
+
+```bash
+
+ $ wget 'http://nginx.org/download/nginx-1.7.10.tar.gz'
+ $ tar -xzvf nginx-1.7.10.tar.gz
+ $ cd nginx-1.7.10/
+
+ # Here we assume you would install you nginx under /opt/nginx/.
+ $ ./configure --prefix=/opt/nginx \
+     --add-module=/path/to/rds-csv-nginx-module
+
+ $ make -j2
+ $ make install
+```
+
+Download the latest version of the release tarball of this module from [rds-csv-nginx-module file list](https://github.com/openresty/rds-csv-nginx-module/tags).
+
+Also, this module is included and enabled by default in the [ngx_openresty bundle](http://openresty.org).
 
 [Back to TOC](#table-of-contents)
 
