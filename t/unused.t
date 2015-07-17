@@ -71,6 +71,9 @@ ok
 
 
 === TEST 3: used (multi http {} blocks)
+This test case won't run with nginx 1.9.3+ since duplicate http {} blocks
+have been prohibited since then.
+--- SKIP
 --- http_config eval: $::http_config
 --- config
     location = /t {
