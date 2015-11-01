@@ -8,6 +8,9 @@
 #define NGX_HTTP_RDS_UTILS_H
 
 
+#include <stdint.h>
+
+
 static ngx_inline ngx_int_t
 ngx_http_rds_parse_header(ngx_http_request_t *r, ngx_buf_t *b,
     ngx_http_rds_header_t *header)
