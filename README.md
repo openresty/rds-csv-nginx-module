@@ -156,13 +156,13 @@ You're recommended to install this module (as well as the Nginx core and many ot
 Alternatively, you can install this module manually with the Nginx source:
 
 Grab the nginx source code from [nginx.org](http://nginx.org/), for example,
-the version 1.9.3 (see [nginx compatibility](#compatibility)), and then build the source with this module:
+the version 1.9.7 (see [nginx compatibility](#compatibility)), and then build the source with this module:
 
 ```bash
 
- $ wget 'http://nginx.org/download/nginx-1.9.3.tar.gz'
- $ tar -xzvf nginx-1.9.3.tar.gz
- $ cd nginx-1.9.3/
+ $ wget 'http://nginx.org/download/nginx-1.9.7.tar.gz'
+ $ tar -xzvf nginx-1.9.7.tar.gz
+ $ cd nginx-1.9.7/
 
  # Here we assume you would install you nginx under /opt/nginx/.
  $ ./configure --prefix=/opt/nginx \
@@ -183,7 +183,7 @@ Compatibility
 
 This module is compatible with the following versions of Nginx:
 
-* **1.9.x** (last tested: 1.9.3)
+* **1.9.x** (last tested: 1.9.7)
 * **1.8.x**
 * **1.7.x** (last tested: 1.7.10)
 * **1.6.x**
@@ -205,7 +205,7 @@ Copyright & License
 ===================
 This module is licenced under the BSD license.
 
-Copyright (C) 2011-2015, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, CloudFlare Inc.
+Copyright (C) 2011-2016, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, CloudFlare Inc.
 
 All rights reserved.
 
