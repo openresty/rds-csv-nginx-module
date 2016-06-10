@@ -33,7 +33,6 @@ env:
     - NGINX_VERSION=1.9.15
 
 services:
- - memcache
  - postgresql
 
 before_install:
