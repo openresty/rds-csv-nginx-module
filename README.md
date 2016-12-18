@@ -197,7 +197,7 @@ This module is compatible with the following versions of Nginx:
 
 Author
 ======
-Yichun "agentzh" Zhang &lt;agentzh@gmail.com&gt;, CloudFlare Inc.
+Yichun "agentzh" Zhang &lt;agentzh@gmail.com&gt;, OpenResty Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -205,7 +205,7 @@ Copyright & License
 ===================
 This module is licenced under the BSD license.
 
-Copyright (C) 2011-2016, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, CloudFlare Inc.
+Copyright (C) 2011-2017, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, OpenResty Inc.
 
 All rights reserved.
 
