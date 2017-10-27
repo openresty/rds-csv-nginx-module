@@ -1,16 +1,9 @@
 {
-<insert_a_suppression_name_here>
-Memcheck:Addr4
-fun:ngx_init_cycle
-fun:ngx_master_process_cycle
-fun:main
-}
-{
    <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:malloc
-   fun:ngx_alloc
-   fun:ngx_palloc_large
+   Memcheck:Addr4
+   fun:ngx_init_cycle
+   fun:ngx_master_process_cycle
+   fun:main
 }
 {
    <insert_a_suppression_name_here>
@@ -131,7 +124,6 @@ fun:main
    fun:ngx_init_cycle
    fun:main
 }
-
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
