@@ -262,7 +262,7 @@ static ngx_int_t
 ngx_http_rds_csv_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
     ngx_http_rds_csv_ctx_t    *ctx;
-    ngx_int_t                   rc;
+    ngx_int_t                  rc;
 
     if (in == NULL || r->header_only) {
         return ngx_http_rds_csv_next_body_filter(r, in);
@@ -275,6 +275,7 @@ ngx_http_rds_csv_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
     }
 
     switch (ctx->state) {
+
     case state_expect_header:
         rc = ngx_http_rds_csv_process_header(r, in, ctx);
         break;
