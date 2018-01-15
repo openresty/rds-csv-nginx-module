@@ -31,6 +31,7 @@ ngx_http_rds_csv_escape_csv_str(u_char field_sep, u_char *dst, u_char *src,
             switch (*src) {
                 case '"':
                     n++;
+                    /* fallthrough */
 
                 case '\r':
                 case '\n':
