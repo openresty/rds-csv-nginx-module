@@ -209,7 +209,7 @@ Copyright & License
 ===================
 This module is licenced under the BSD license.
 
-Copyright (C) 2011-2017, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, OpenResty Inc.
+Copyright (C) 2011-2018, Yichun "agentzh" Zhang (章亦春) &lt;agentzh@gmail.com&gt;, OpenResty Inc.
 
 All rights reserved.
 
