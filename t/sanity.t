@@ -353,7 +353,7 @@ id,created\r
     upstream backend {
         drizzle_server 127.0.0.1:$TEST_NGINX_MYSQL_PORT protocol=mysql
                        dbname=ngx_test user=ngx_test password=ngx_test
-                       charset=utf8;
+                       charset=utf8mb4;
     }
 
 --- config
@@ -380,7 +380,7 @@ errcode,errstr,insert_id,affected_rows\r
 0,,1,1\r
 id,body\r
 1,"a\r
-b\b??\cZ"\r
+b\b你好\cZ"\r
 }
 --- timeout: 5
 
