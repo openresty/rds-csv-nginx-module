@@ -25,6 +25,7 @@ addons:
     - libtest-longstring-perl
     - liblist-moreutils-perl
     - libgd-dev
+  postgresql: "13"
 
 compiler:
   - gcc
