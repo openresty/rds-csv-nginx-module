@@ -33,6 +33,7 @@ typedef struct {
     size_t                           buf_size;
     ngx_flag_t                       field_name_header;
     ngx_str_t                        content_type;
+    ngx_flag_t                       quote_string;
 } ngx_http_rds_csv_loc_conf_t;
 
 
