@@ -34,8 +34,4 @@ typedef struct ngx_http_rds_column_s {
 } ngx_http_rds_column_t;
 
 
-
-
-
 #endif /* NGX_HTTP_RDS_H */
-

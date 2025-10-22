@@ -80,9 +80,9 @@ typedef struct {
 
     uint32_t                             field_data_rest;
 
-    ngx_flag_t                           header_sent:1;
-    ngx_flag_t                           seen_stream_end:1;
-    ngx_flag_t                           generated_col_names:1;
+    uint32_t                             header_sent:1;
+    uint32_t                             seen_stream_end:1;
+    uint32_t                             generated_col_names:1;
 } ngx_http_rds_csv_ctx_t;
 
 
